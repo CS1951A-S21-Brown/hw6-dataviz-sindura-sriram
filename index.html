@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
         <meta charset="utf-8">
-        <title>Assignment 6 &laquo; Data Visualization Dashboard&raquo;</title>
+        <title>Assignment 6</title>
         <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
         <link rel="stylesheet" href="main.css"/>
         <!--Feel free to add more CSS files as needed-->
@@ -10,19 +10,46 @@
     </head>
 <body>
     <div class="header">
-        <h3>Assignment 6 &laquo; Data Visualization Dashboard &raquo;</h3>
+        <h3>Data on the Netflix Collection</h3>
     </div>
     <!--  We included a basic HTML structure for the 3 graphs here. Feel free to change this if you'd like  -->
     <div class="row">
         <div class="col-lg-6">
-            <div id="graph1"></div>
-            <div id="graph2"></div><br/>
+            <div id="graph1">
+                <div id="barplot1"></div>
+            </div>
+            <div id="graph2">
+                <!-- choose range of 20 years to show runtimes for -- slider? -->
+                <!-- side by side (display = flex?) Start Year, Slider -->
+                <div class="slidecontainer">
+                    <p>End Year: <span id="end_yr"></span></p>
+                    <input type="range" min="1970" max="2020" value="1970" class="slider" id="myRange" onclick="setData(value)">
+                  </div>
+                <div id="barplot2"></div>
+            </div><br/>
         </div>
         <div class="col-lg-6">
-            <div id="graph3"></div>
+            <div id="graph3">
+                <div id="flowchart"></div>
+            </div>
         </div>
     </div>
     <!--Feel free to add more JavaScript files as needed-->
+    <script type="text/javascript">
+        // Define margins for SVG
+        const margin = {top: 40, right: 100, bottom: 40, left: 350};
+        // TODO: Define the number of examples to display on the graph
+        const NUM_EXAMPLES = 20;
+
+        var slider = document.getElementById("myRange");
+        var output = document.getElementById("end_yr");
+        output.innerHTML = slider.value; // Display the default slider value
+
+        // Update the current slider value (each time you drag the slider handle)
+        slider.oninput = function() {
+        output.innerHTML = this.value;
+        }
+    </script>
     <script type="text/javascript" src="main.js"></script>
 </body>
 </html>

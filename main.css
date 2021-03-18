@@ -10,3 +10,14 @@
 }
 
 /* Include any custom CSS styling here! */
+
+.slidecontainer {
+    width: 50%;
+    display: flex;
+    text-align: right;
+    justify-content: space-around;
+    transform: translateX(50%);
+}
+
+
+  
