@@ -3,6 +3,13 @@
     margin-bottom: 20px;
 }
 
+.text {
+    display: inline;
+    font: Garamond, serif;
+    overflow-wrap: normal;
+    width: 200px;
+}
+
 .header > h3, h5 {
     margin: 0;
     padding-top: 20px;
@@ -19,5 +26,32 @@
     transform: translateX(50%);
 }
 
+.link {
+  stroke: #aaa;
+  cursor:pointer;
+  padding: 3px;
+}
+
+.node text {
+    stroke:#333;
+}
+
+.node circle{
+    stroke:#fff;
+    stroke-width:1px;
+    fill:#555;
+}
+
+div.tooltip {				
+    text-align: center;	
+    align-items: center;
+    width: 80px;					
+    height: 30px;;				
+    font: 12px sans-serif;		
+    background:#cae9fc;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
 
   
