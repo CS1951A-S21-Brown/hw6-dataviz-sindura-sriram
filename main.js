@@ -241,6 +241,7 @@ function graph3() {
         .attr("height", graph_3_height);
 
     var color = d3.scaleOrdinal(d3.schemePaired);
+    var linkColor = ["#ffffff","#f0f0f0","#d9d9d9","#bdbdbd","#969696","#737373","#525252","#252525","#000000"]
 
     d3.forceSimulation().force("link", d3.forceLink())
         .force('charge', d3.forceManyBody()
@@ -291,14 +292,10 @@ function graph3() {
             return { source: source, target: target, value: d.value };
         });
 
-        let linkColor = d3.scaleOrdinal()
-            .domain(data.map(function (d) { return d.value }))
-            .range(d3.quantize(d3.interpolateHcl("#aaa", "#000"), NUM_EXAMPLES));
-
-        createNetworkGraph(all_actors, linkColor);
+        createNetworkGraph(all_actors);
     });
 
-    function createNetworkGraph(json, linkColor) {
+    function createNetworkGraph(json) {
         var nodes = [];
         var links = [];
 
@@ -329,12 +326,13 @@ function graph3() {
         console.log(linkColor);
 
         var link = graph_3_svg.append("g")
-            .style("stroke", "#aaa")
             .selectAll(".link")
             .data(links)
             .enter().append("line")
             .attr("class", "link")
-            .attr("stroke-width", function (d) { return (d.value/3) + "px"; })
+            .attr("stroke", function (d) { 
+                console.log(d.value, linkColor[d.value]);
+                return linkColor[d.value]; })
             .on("mouseover", mouseover)
             .on("mouseout", mouseout);
 
