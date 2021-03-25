@@ -18,6 +18,10 @@ function graph1() {
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
     d3.csv("./data/netflix.csv").then(function (data) {
+        // only consider genres types of movie titles
+        let attr = "type";
+        let type = "Movie";
+        data = filterData(data, attr, type);
         // desired data is genre, at 'listed_in'
         data = data.map(function (d) { 
             let genre_list = d["listed_in"].split(", ");
