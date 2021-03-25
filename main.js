@@ -38,8 +38,7 @@ function graph1() {
             });
         });
 
-        console.log(all_genres);
-
+        
         // now we have list of all genres, and we need to map this to an array w all possible genres and count of each one
         data = d3.nest().key(function (d) { return d.genre; })
             .rollup(function (counts) {
@@ -48,11 +47,10 @@ function graph1() {
                 });
             }).entries(all_genres);
         
-        console.log(data);
-
+        
         // now we can sort genres by count high to low
         data = sortData(data, compare, `${NUM_EXAMPLES}`);
-        console.log(data);
+        
         let x = d3.scaleLinear()
             .domain([0, d3.max(data, function (d) { return d.value })])
             .range([0, graph_1_width - `${margin.left}` - `${margin.right}`]);
@@ -99,7 +97,7 @@ function graph1() {
 
         // x-axis label
         graph_1_svg.append("text")
-            .attr("transform", `translate(35, 235)`)
+            .attr("transform", `translate(20, 235)`)
             .style("text-anchor", "middle")
             .text("Count");
 
@@ -292,10 +290,15 @@ function graph3() {
             var target = nodes[1];
             return { source: source, target: target, value: d.value };
         });
-        createNetworkGraph(all_actors);
+
+        let linkColor = d3.scaleOrdinal()
+            .domain(data.map(function (d) { return d.value }))
+            .range(d3.quantize(d3.interpolateHcl("#aaa", "#000"), NUM_EXAMPLES));
+
+        createNetworkGraph(all_actors, linkColor);
     });
 
-    function createNetworkGraph(json) {
+    function createNetworkGraph(json, linkColor) {
         var nodes = [];
         var links = [];
 
@@ -322,12 +325,16 @@ function graph3() {
             .force("link", d3.forceLink(links).distance(50).strength(1))
             .on("tick", ticked)
 
+        console.log(color);
+        console.log(linkColor);
+
         var link = graph_3_svg.append("g")
             .style("stroke", "#aaa")
             .selectAll(".link")
             .data(links)
             .enter().append("line")
             .attr("class", "link")
+            .attr("stroke-width", function (d) { return (d.value/3) + "px"; })
             .on("mouseover", mouseover)
             .on("mouseout", mouseout);
 
@@ -466,5 +473,5 @@ function combinations(array) {
 }
 
 graph1();
-setRuntimeData(1970);
+setRuntimeData(1976);
 graph3();
