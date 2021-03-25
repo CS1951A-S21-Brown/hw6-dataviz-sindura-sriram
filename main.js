@@ -22,6 +22,10 @@ function graph1() {
         let attr = "type";
         let type = "Movie";
         data = filterData(data, attr, type);
+        // only consider titles in the US
+        attr = "country";
+        let country = "United States";
+        data = filterData(data, attr, country);
         // desired data is genre, at 'listed_in'
         data = data.map(function (d) { 
             let genre_list = d["listed_in"].split(", ");
@@ -48,7 +52,7 @@ function graph1() {
 
         // now we can sort genres by count high to low
         data = sortData(data, compare, `${NUM_EXAMPLES}`);
-
+        console.log(data);
         let x = d3.scaleLinear()
             .domain([0, d3.max(data, function (d) { return d.value })])
             .range([0, graph_1_width - `${margin.left}` - `${margin.right}`]);
@@ -158,6 +162,10 @@ function setRuntimeData(end_year) {
         let attr = "type";
         let type = "Movie";
         data = filterData(data, attr, type);
+        // only consider runtime of movies in the US
+        attr = "country";
+        let country = "United States";
+        data = filterData(data, attr, country);
         // duration is a string written as "# min", we just want num
         data = data.map(function (d) { return { year: d["release_year"], runtime: parseInt(d.duration.split(" ")[0], 10) } })
 
