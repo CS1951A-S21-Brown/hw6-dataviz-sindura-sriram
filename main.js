@@ -19,8 +19,18 @@ function graph1() {
 
     d3.csv("./data/netflix.csv").then(function (data) {
         // desired data is genre, at 'listed_in'
-        data = data.map(function (d) { return { genre: d["listed_in"], count: 1 } })
+        data = data.map(function (d) { 
+            let genre_list = d["listed_in"].split(", ");
+            return { genre: genre_list, count: 1 } })
+        
+        var all_genres = [];
+        data.forEach(function (d) {
+            d.genre.forEach(function (a) {
+                all_genres.push({genre: a, count:1 });
+            });
+        });
 
+        console.log(all_genres);
 
         // now we have list of all genres, and we need to map this to an array w all possible genres and count of each one
         data = d3.nest().key(function (d) { return d.genre; })
@@ -28,7 +38,9 @@ function graph1() {
                 return d3.sum(counts, function (d) {
                     return d.count;
                 });
-            }).entries(data);
+            }).entries(all_genres);
+        
+        console.log(data);
 
         // now we can sort genres by count high to low
         data = sortData(data, compare, `${NUM_EXAMPLES}`);
@@ -48,7 +60,7 @@ function graph1() {
 
         let color = d3.scaleOrdinal()
             .domain(data.map(function (d) { return d.value }))
-            .range(d3.quantize(d3.interpolateHcl("#a7e691", "#a7e634"), NUM_EXAMPLES));
+            .range(d3.quantize(d3.interpolateHcl("#32A02E", "#B2DF8A"), NUM_EXAMPLES));
 
         let bars = graph_1_svg.selectAll("rect").data(data);
 
@@ -85,12 +97,12 @@ function graph1() {
 
         // y-axis label
         graph_1_svg.append("text")
-            .attr("transform", `translate(-30, -5)`)
+            .attr("transform", `translate(-180, 100) rotate(-90)`)
             .style("text-anchor", "middle")
             .text("Genre");
         // title
         graph_1_svg.append("text")
-            .attr("transform", `translate(130, -5)`)
+            .attr("transform", `translate(100, -5)`)
             .style("text-anchor", "middle")
             .style("font-size", 15)
             .text("Number of Titles per Genre");
@@ -139,16 +151,18 @@ graph_2_svg.append("text")
 function setRuntimeData(end_year) {
     d3.csv("./data/netflix.csv").then(function (data) {
         // we only want movies, not tv shows.
+        let attr = "type";
         let type = "Movie";
-        data = filterData(data, type);
+        data = filterData(data, attr, type);
         // duration is a string written as "# min", we just want num
         data = data.map(function (d) { return { year: d["release_year"], runtime: parseInt(d.duration.split(" ")[0], 10) } })
 
+        // calculate average runtimes for each year
         var data = d3.nest().key(function (d) { return d.year; })
             .rollup(function (runtimes) {
                 return d3.mean(runtimes, function (d) {
                     return d.runtime;
-                });
+                }).toFixed(1);
             }).entries(data);
 
 
@@ -169,19 +183,19 @@ function setRuntimeData(end_year) {
         y_axis_label.call(d3.axisLeft(y).tickSize(0).tickPadding(10));
 
         let color = d3.scaleOrdinal()
-            .domain(data.map(function (d) { return d.value }))
-            .range(d3.quantize(d3.interpolateHcl("#4570e6", "#4513e3"), NUM_EXAMPLES));
+            .domain(data.map(function (d) { return d.key }))
+            .range(d3.quantize(d3.interpolateHcl("#A6CEE4", "#2178B4"), NUM_EXAMPLES));
 
         let bars = graph_2_svg.selectAll("rect").data(data);
         bars.enter()
             .append("rect")
             .merge(bars)
-            .attr("fill", function (d) { return color(d.value) })
+            .attr("fill", function (d) { return color(d.key) })
             .transition()
             .duration(1000)
             .attr("x", x(0))
             .attr("y", function (d) { return y(d.key) })
-            .attr("width", function (d) { return x(d.value) })
+            .attr("width", function (d) { return x(d.value)/1.5 })
             .attr("height", y.bandwidth());
 
         let counts = countRef.selectAll("text").data(data);
@@ -191,9 +205,9 @@ function setRuntimeData(end_year) {
             .merge(counts)
             .transition()
             .duration(1000)
-            .attr("x", function (d) { return x(d.value) })   // x offset    
+            .attr("x", function (d) { return x(d.value)/1.5 })   // x offset    
             .attr("y", function (d) { return y(d.key) + y.bandwidth() })      // y offset
-            .style("font-size", "10px")
+            .style("font-size", "12px")
             .text(function (d) { return d.value })
 
         // Remove elements not in use if fewer groups in new dataset
@@ -204,7 +218,6 @@ function setRuntimeData(end_year) {
 }
 
 // Graph 3 : Flow Chart
-// actors of highest rated movies and tv shows?
 function graph3() {
     // Set up reference to tooltip
     let tooltip = d3.select("#flowchart")
@@ -229,6 +242,10 @@ function graph3() {
 
 
     d3.csv("./data/netflix.csv").then(function (data) {
+        // before acquiring list of actor connections, filter to only include titles from the U.S.
+        let attr = "country";
+        let country = "United States";
+        data = filterData(data, attr, country);
         // convert cast into a list of actors --> combinations of all the actors
         data = data.map(function (d) {
             let cast = d.cast;
@@ -244,7 +261,6 @@ function graph3() {
             });
         });
 
-        // We now have 20,876 links between actors
         //now aggregate count!
         all_actors = d3.nest().key(function (d) { return d.actors; })
             .rollup(function (counts) {
@@ -252,11 +268,10 @@ function graph3() {
                     return d.count;
                 });
             }).entries(all_actors);
-        all_actors = sortData(all_actors, compare, 100);
+        all_actors = sortData(all_actors, compare, 200);
         // now, for each entry in all_actors we need to make two nodes and form a link between them
         // Actor1, Actor2 = source, target
         // reduce duplicates --> taken care of in createNetworkGraph, duplicate nodes/links are not added
-
         all_actors = all_actors.map(function (d) {
             let str = d.key;
             let nodes = str.split(",");
@@ -355,21 +370,21 @@ function graph3() {
 
     // title
     graph_3_svg.append("text")
-        .attr("transform", `translate(360, 70)`)
+        .attr("transform", `translate(360, 40)`)
         .style("text-anchor", "middle")
         .style("font-size", 15)
-        .text("Actors Who Have the Most Collaborations*");
+        .text("US Actors With the Most Collaborations*");
 
     // description
     graph_3_svg.append("text")
-        .attr("transform", `translate(360, 500)`)
+        .attr("transform", `translate(360, 550)`)
         .attr("class", "text")
         .style("text-anchor", "middle")
         .style("font-size", 10)
         .text("*Collaboration is defined as two actors appearing in the same title.");
 
     graph_3_svg.append("text")
-        .attr("transform", `translate(360, 510)`)
+        .attr("transform", `translate(360, 560)`)
         .attr("class", "text")
         .style("text-anchor", "middle")
         .style("font-size", 10)
@@ -381,7 +396,7 @@ function graph3() {
             html = `${d.name}<br/>`;
         }
         if (d.value) {
-            html = `Movies: ${d.value}<br/>`;
+            html = `Titles: ${d.value}<br/>`;
         }
         // Show the tooltip and set the position relative to the event X and Y location
         tooltip.html(html)
@@ -419,8 +434,8 @@ function sortData(data, comparator, numExamples) {
     return data.splice(0, numExamples);
 }
 
-function filterData(data, type) {
-    return data.filter(function (a) { return a.type === (type); });
+function filterData(data, attr, filt) {
+    return data.filter(function (a) { return a[attr] === (filt); });
 }
 
 function filterYr(data, year) {
