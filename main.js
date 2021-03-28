@@ -310,9 +310,7 @@ function graph3() {
                 nodecolors[d.source] = Math.floor(Math.random() * Math.floor(6));
             }
             else{
-                if(d.value > nodevals[d.source]){
-                    nodevals[d.source] = d.value;
-                }
+                nodevals[d.source] += d.value;
             }
             if (nodes.indexOf(d.target) < 0) {
                 //target node does not exist in nodes list so add
@@ -322,16 +320,14 @@ function graph3() {
                 nodecolors[d.target] = Math.floor(Math.random() * Math.floor(6));
             }
             else{
-                if(d.value > nodevals[d.target]){
-                    nodevals[d.target] = d.value;
-                }
+                nodevals[d.target] += d.value;
             }
             links.push({ source: nodes.indexOf(d.source), target: nodes.indexOf(d.target), value: d.value })
         });
         nodes = nodes.map(function (n) {
-            return {name: n, group: nodevals[n]+2};
+            return {name: n, group: nodevals[n]-3};
         });
-        // console.log(nodevals);
+        console.log(nodevals);
 
         let simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-600))
@@ -355,7 +351,7 @@ function graph3() {
             .data(nodes)
             .enter().append("circle")
             .attr("r", function(d){
-                return d.group;
+                return 5 + d.group/6;
             })
             .attr("fill", function (d) { 
                 let q = nodecolors[d.name];
@@ -376,7 +372,7 @@ function graph3() {
 
             node
                 .attr("r", function(d){
-                    return d.group;
+                    return 5 + d.group/6;
                 })
                 .style("fill", function (d) { 
                     let q = nodecolors[d.name];
