@@ -240,7 +240,7 @@ function graph3() {
         .attr("width", graph_3_width)
         .attr("height", graph_3_height);
 
-    var color = d3.scaleOrdinal(d3.schemePaired);
+    var color_palette = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c"]
     var linkColor = ["#ffffff","#f0f0f0","#d9d9d9","#bdbdbd","#969696","#737373","#525252","#252525","#000000"]
 
     d3.forceSimulation().force("link", d3.forceLink())
@@ -298,21 +298,40 @@ function graph3() {
     function createNetworkGraph(json) {
         var nodes = [];
         var links = [];
+        var nodevals = {};
+        var nodecolors = {};
 
         json.forEach(function (d) {
-            if (nodes.indexOf(d.source.trim()) < 0) {
+            if (nodes.indexOf(d.source) < 0) {
                 //source node does not exist in nodes list so add
-                nodes.push(d.source.trim())
+                nodes.push(d.source);
+                // nodes.push({name: d.source.trim(), value: d.value})
+                nodevals[d.source] = d.value;
+                nodecolors[d.source] = Math.floor(Math.random() * Math.floor(6));
             }
-            if (nodes.indexOf(d.target.trim()) < 0) {
+            else{
+                if(d.value > nodevals[d.source]){
+                    nodevals[d.source] = d.value;
+                }
+            }
+            if (nodes.indexOf(d.target) < 0) {
                 //target node does not exist in nodes list so add
-                nodes.push(d.target.trim())
+                nodes.push(d.target);
+                // nodes.push({name: d.target.trim(), value: d.value})
+                nodevals[d.target] = d.value;
+                nodecolors[d.target] = Math.floor(Math.random() * Math.floor(6));
             }
-            links.push({ source: nodes.indexOf(d.source.trim()), target: nodes.indexOf(d.target.trim()), value: d.value })
+            else{
+                if(d.value > nodevals[d.target]){
+                    nodevals[d.target] = d.value;
+                }
+            }
+            links.push({ source: nodes.indexOf(d.source), target: nodes.indexOf(d.target), value: d.value })
         });
         nodes = nodes.map(function (n) {
-            return { name: n, group: n.length % 5 }
+            return {name: n, group: nodevals[n]+2};
         });
+        // console.log(nodevals);
 
         let simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-600))
@@ -322,17 +341,12 @@ function graph3() {
             .force("link", d3.forceLink(links).distance(50).strength(1))
             .on("tick", ticked)
 
-        console.log(color);
-        console.log(linkColor);
-
         var link = graph_3_svg.append("g")
             .selectAll(".link")
             .data(links)
             .enter().append("line")
             .attr("class", "link")
-            .attr("stroke", function (d) { 
-                console.log(d.value, linkColor[d.value]);
-                return linkColor[d.value]; })
+            .attr("stroke", "#aaa")
             .on("mouseover", mouseover)
             .on("mouseout", mouseout);
 
@@ -340,8 +354,12 @@ function graph3() {
             .selectAll(".node")
             .data(nodes)
             .enter().append("circle")
-            .attr("r", 5)
-            .attr("fill", function (d) { return color(d.group); })
+            .attr("r", function(d){
+                return d.group;
+            })
+            .attr("fill", function (d) { 
+                let q = nodecolors[d.name];
+                return color_palette[q]; })
             .on("mouseover", mouseover)
             .on("mouseout", mouseout)
             .call(d3.drag()
@@ -357,8 +375,12 @@ function graph3() {
                 .attr("y2", function (d) { return d.target.y; });
 
             node
-                .attr("r", 5)
-                .style("fill", function (d) { return color(d.group); })
+                .attr("r", function(d){
+                    return d.group;
+                })
+                .style("fill", function (d) { 
+                    let q = nodecolors[d.name];
+                    return color_palette[q]; })
                 .style("stroke", "#000")
                 .style("stroke-width", "1px")
                 .attr("cx", function (d) { return d.x + 5; })
